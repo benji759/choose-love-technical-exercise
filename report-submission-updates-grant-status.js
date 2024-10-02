@@ -10,41 +10,41 @@ let grantLinkField = "Grant reference"; // The linked grant in the report
 let grantEndDateField = "End date"; // The grant end date field in the Grants table
 let grantStatusField = "Status"; // The status field in the Grants table
 
-// Get the report records that need to be processed
-let queryResult = await reportsTable.selectRecordsAsync({
+// Get all reports records
+let reports = await reportsTable.selectRecordsAsync({
     fields: [submissionDateField, grantLinkField], // Just fetch the required fields
+    sorts: [{field: "Autonumber", direction: "desc"}], // Order by when added
 });
 
-// Loop through items in the reports table
-for (let report of queryResult.records) {
-    let submissionDate = report.getCellValue(submissionDateField);
-    let linkedGrant = report.getCellValue(grantLinkField);
+let report = reports.records[0]; // Get the report record to be processed - the last one added
 
-    // Check if the report has a submission date and linked grant
-    if (submissionDate && linkedGrant) {
-        let grantId = linkedGrant[0].id; // Assuming only one linked grant per report
-        let grantRecord = grantId ? await grantsTable.selectRecordAsync(grantId) : null;
+let submissionDate = report.getCellValue(submissionDateField);
+let linkedGrant = report.getCellValue(grantLinkField);
 
-        if (grantId && grantRecord) {
-            // Get the corresponding grant record
-            let grantEndDate = grantRecord.getCellValue(grantEndDateField);
+// Check if the report has a submission date and linked grant
+if (submissionDate && linkedGrant) {
+    let grantId = linkedGrant[0].id; // Assuming only one linked grant per report
+    let grantRecord = grantId ? await grantsTable.selectRecordAsync(grantId) : null;
 
-            // Check if the grant has an end date
-            if (grantEndDate) {
-                let newStatus;
+    if (grantId && grantRecord) {
+        // Get the corresponding grant record
+        let grantEndDate = grantRecord.getCellValue(grantEndDateField);
 
-                // Compare submission date with grant end date
-                if (new Date(submissionDate) <= new Date(grantEndDate)) {
-                    newStatus = "Active"; // Report submitted on time
-                } else {
-                    newStatus = "Delayed"; // Report submitted late
-                }
+        // Check if the grant has an end date
+        if (grantEndDate) {
+            let newStatus;
 
-                // Update the grant status if necessary
-                await grantsTable.updateRecordAsync(grantId, {
-                    [grantStatusField]: newStatus
-                });
+            // Compare submission date with grant end date
+            if (new Date(submissionDate) <= new Date(grantEndDate)) {
+                newStatus = "Active"; // Report submitted on time
+            } else {
+                newStatus = "Delayed"; // Report submitted late
             }
+
+            // Update the grant status if necessary
+            await grantsTable.updateRecordAsync(grantId, {
+                [grantStatusField]: newStatus
+            });
         }
     }
 }
