@@ -7,6 +7,7 @@ let submissionDateField = "Submission date"; // The date when the report was sub
 let grantLinkField = "Grant reference"; // The linked grant in the report
 
 // Set relevant fields from the Grants table
+let reference = "Reference"; // The grant reference field in the Grants table
 let grantEndDateField = "End date"; // The grant end date field in the Grants table
 let grantStatusField = "Status"; // The status field in the Grants table
 
@@ -23,13 +24,15 @@ let linkedGrant = report.getCellValue(grantLinkField);
 
 // Check if the report has a submission date and linked grant
 if (submissionDate && linkedGrant) {
-    let grantId = linkedGrant[0].id; // Assuming only one linked grant per report
-    let grantRecord = grantId ? await grantsTable.selectRecordAsync(grantId) : null;
+    let grantRecords = await grantsTable.selectRecordsAsync({
+        fields: [reference, grantEndDateField], // Just fetch the required fields
+    });
 
-    if (grantId && grantRecord) {
+    let grantRecord = grantRecords.records.find(r => { return r.name === linkedGrant });
+
+    if (grantRecord) {
         // Get the corresponding grant record
         let grantEndDate = grantRecord.getCellValue(grantEndDateField);
-
         // Check if the grant has an end date
         if (grantEndDate) {
             let newStatus;
@@ -42,7 +45,7 @@ if (submissionDate && linkedGrant) {
             }
 
             // Update the grant status if necessary
-            await grantsTable.updateRecordAsync(grantId, {
+            await grantsTable.updateRecordAsync(grantRecord.id, {
                 [grantStatusField]: newStatus
             });
         }
