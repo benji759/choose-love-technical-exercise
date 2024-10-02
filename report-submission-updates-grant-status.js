@@ -11,7 +11,9 @@ let grantEndDateField = "End date"; // The grant end date field in the Grants ta
 let grantStatusField = "Status"; // The status field in the Grants table
 
 // Get the report records that need to be processed
-let queryResult = await reportsTable.selectRecordsAsync();
+let queryResult = await reportsTable.selectRecordsAsync({
+    fields: [submissionDateField, grantLinkField], // Just fetch the required fields
+});
 
 // Loop through items in the reports table
 for (let report of queryResult.records) {
