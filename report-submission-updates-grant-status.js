@@ -1,12 +1,12 @@
-// Get relevant tables
+// Set relevant tables
 let reportsTable = base.getTable("Reports");
 let grantsTable = base.getTable("Grants");
 
-// Get relevant fields from the Reports table
+// Set relevant fields from the Reports table
 let submissionDateField = "Submission date"; // The date when the report was submitted
 let grantLinkField = "Grant reference"; // The linked grant in the report
 
-// Get relevant fields from the Grants table
+// Set relevant fields from the Grants table
 let grantEndDateField = "End date"; // The grant end date field in the Grants table
 let grantStatusField = "Status"; // The status field in the Grants table
 
